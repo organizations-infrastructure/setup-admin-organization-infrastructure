@@ -1,0 +1,132 @@
+name: 'Generate a new organization admin infrastructure repository'
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: 'The project name'
+        required: true
+      github_organization_name:
+        description: 'The organization name on github'
+        required: true
+      terraform_cloud_organization_name:
+        description: 'The organization name on terraform cloud, will also be used as workspace name in the organization-infrastructure organization'
+        required: true
+      aws_organizational_unit_name:
+        description: 'The organizational unit name on AWS'
+        required: true
+      organization_email:
+        description: 'Organization Email'
+        required: true
+      aws_root_id:
+        description: 'AWS Root account ID'
+        required: true
+      aws_management_account:
+        description: 'AWS Management Account Name'
+        required: true
+      aws_management_email:
+        description: 'AWS Management Email'
+        required: true
+      commit_author:
+        description: 'The author for generated files'
+        required: false
+        default: 'Github Actions'
+      commit_email:
+        description: 'The commit email used for generated files'
+        default: 'noreply@github.com'
+        required: false
+
+jobs:
+  generate-repository:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout template repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.PAT }}
+          repository: "organizations-infrastructure/organization-template"
+
+      - name: Replace placeholders in README.md
+        run: |
+          sed -i "s/PROJECT_NAME/${{ inputs.project_name }}/g" README.md
+          sed -i "s/GITHUB_ORGANIZATION_NAME/${{ inputs.github_organization_name }}/g" README.md
+          sed -i "s/TERRAFORM_CLOUD_ORGANIZATION_NAME/${{ inputs.terraform_cloud_organization_name }}/g" README.md
+          sed -i "s/AWS_ORGANIZATIONAL_UNIT_NAME/${{ inputs.aws_organizational_unit_name }}/g" README.md
+
+      - name: Generate locals.tf
+        run: |
+          cat <<EOF
+          locals {
+            project = {
+              name                          = "${{ inputs.project_name }}"
+              github_organization           = "${{ inputs.github_organization_name }}"
+              terraform_cloud_organization  = "${{ inputs.terraform_cloud_organization_name }}"
+              aws_organizational_unit       = "${{ inputs.aws_organizational_unit_name }}"
+              commit_author                 = "${{ inputs.commit_author }}"
+              commit_email                  = "${{ inputs.commit_email }}"
+              organization_email            = "${{ inputs.organization_email }}"
+              aws_root_id                   = "${{ inputs.aws_root_id }}"
+              aws_management_account        = "${{ inputs.aws_management_account }}"
+              aws_management_email          = "${{ inputs.aws_management_email }}"
+              organization_variables = {
+                "project" = {
+                  hcl         = false
+                  sensitive   = false
+                  value       = ${{ inputs.project_name }}
+                  description = "The project name in the Project-Service-Layer architecture"
+                }
+                "terraform_organization" = {
+                  hcl         = false
+                  sensitive   = false
+                  value       = "${{ inputs.terraform_cloud_organization_name }}"
+                  description = "The organization name on terraform cloud"
+                }
+                "domain_name" = {
+                  hcl         = false
+                  sensitive   = false
+                  value       = "DOMAIN"
+                  description = "The registered domain name (does not need to be registered yet but check availability)"
+                }
+                "sender_id" = {
+                  hcl         = false
+                  sensitive   = false
+                  value       = "SENDER_ID"
+                  description = "Sender id for transactional sms (auth). Maximum 11 alphanumeric or hyphen (-) characters, including at least one letter and no spaces. It has to start and end with an alphanumeric character."
+                }
+                "domain_email_forward_addresses" = {
+                  hcl         = false
+                  sensitive   = false
+                  value       = "['EMAIL_1',"EMAIL_2"]"
+                  description = "The emails addresses to forward the emails sent to the SES verified domain"
+                }
+              }
+            }
+          }
+          EOF > locals.tf
+
+      - name: Create new repo, commit and push
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
+        run: |
+          # Set Git config
+          git config user.name "${{ github.event.inputs.commit_author }}"
+          git config user.email "${{ github.event.inputs.commit_email }}"
+          
+          # Create a new repo
+          gh repo create organization-infrastructure/${{ github.event.inputs.project_name }} --public --confirm
+          
+          # Add all files and make a commit
+          git add .
+          git commit -m "feat: initial commit from template"
+          
+          git remote remove origin
+          git remote add origin git@github.com:organizations-infrastructure/setup-admin-organization-infrastructure.git
+          git branch -M main
+          git push -u origin main
+       
