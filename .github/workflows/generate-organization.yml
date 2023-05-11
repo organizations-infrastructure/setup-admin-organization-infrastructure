@@ -50,7 +50,7 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.PAT }}
-          repository: "organizations-infrastructure/organization-template"
+          repository: "codingones-github-templates/organization-template"
 
       - name: Replace placeholders in README.md
         run: |
@@ -119,14 +119,14 @@ jobs:
           git config user.email "${{ github.event.inputs.commit_email }}"
           
           # Create a new repo
-          gh repo create organization-infrastructure/${{ github.event.inputs.project_name }} --public --confirm
+          gh repo create organizations-infrastructure/${{ github.event.inputs.project_name }} --public --confirm
           
           # Add all files and make a commit
           git add .
           git commit -m "feat: initial commit from template"
           
           git remote remove origin
-          git remote add origin git@github.com:organizations-infrastructure/setup-admin-organization-infrastructure.git
+          git remote add origin git@github.com:organizations-infrastructure/${{ github.event.inputs.project_name }}.git
           git branch -M main
           git push -u origin main
        
