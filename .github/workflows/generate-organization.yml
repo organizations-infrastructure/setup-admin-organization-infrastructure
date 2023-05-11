@@ -52,12 +52,14 @@ jobs:
           token: ${{ secrets.PAT }}
           repository: "codingones-github-templates/organization-template"
 
-      - name: Replace placeholders in README.md
+      - name: Replace placeholders in README.md & main.tf
         run: |
           sed -i "s/PROJECT_NAME/${{ inputs.project_name }}/g" README.md
           sed -i "s/GITHUB_ORGANIZATION_NAME/${{ inputs.github_organization_name }}/g" README.md
           sed -i "s/TERRAFORM_CLOUD_ORGANIZATION_NAME/${{ inputs.terraform_cloud_organization_name }}/g" README.md
+          sed -i "s/WORKSPACE/${{ inputs.terraform_cloud_organization_name }}/g" main.tf
           sed -i "s/AWS_ORGANIZATIONAL_UNIT_NAME/${{ inputs.aws_organizational_unit_name }}/g" README.md
+          
 
       - name: Generate locals.tf
         run: |
