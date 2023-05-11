@@ -34,10 +34,10 @@ on:
       commit_author:
         description: 'The author for generated files'
         required: false
-        default: 'Github Actions'
+        default: 'github-actions[bot]'
       commit_email:
         description: 'The commit email used for generated files'
-        default: 'noreply@github.com'
+        default: 'github-actions[bot]@users.noreply.github.com'
         required: false
 
 jobs:
