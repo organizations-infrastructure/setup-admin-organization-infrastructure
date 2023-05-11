@@ -61,7 +61,7 @@ jobs:
 
       - name: Generate locals.tf
         run: |
-          cat <<EOF
+          cat <<EOF > locals.tf
           locals {
             project = {
               name                          = "${{ inputs.project_name }}"
@@ -102,13 +102,13 @@ jobs:
                 "domain_email_forward_addresses" = {
                   hcl         = false
                   sensitive   = false
-                  value       = "['EMAIL_1',"EMAIL_2"]"
+                  value       = "['EMAIL_1','EMAIL_2']"
                   description = "The emails addresses to forward the emails sent to the SES verified domain"
                 }
               }
             }
           }
-          EOF > locals.tf
+          EOF
 
       - name: Create new repo, commit and push
         env:
@@ -119,14 +119,13 @@ jobs:
           git config user.email "${{ github.event.inputs.commit_email }}"
           
           # Create a new repo
-          gh repo create organizations-infrastructure/${{ github.event.inputs.project_name }} --public --confirm
+          gh repo create organizations-infrastructure/${{ github.event.inputs.project_name }} --public
           
           # Add all files and make a commit
           git add .
           git commit -m "feat: initial commit from template"
           
           git remote remove origin
-          git remote add origin git@github.com:organizations-infrastructure/${{ github.event.inputs.project_name }}.git
+          git remote add origin https://github.com/organizations-infrastructure/${{ github.event.inputs.project_name }}.git
           git branch -M main
           git push -u origin main
-       
