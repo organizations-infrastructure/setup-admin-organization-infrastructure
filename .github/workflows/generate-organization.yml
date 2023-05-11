@@ -80,7 +80,7 @@ jobs:
                 "project" = {
                   hcl         = false
                   sensitive   = false
-                  value       = ${{ inputs.project_name }}
+                  value       = "${{ inputs.project_name }}"
                   description = "The project name in the Project-Service-Layer architecture"
                 }
                 "terraform_organization" = {
