@@ -66,17 +66,17 @@ jobs:
           cat <<EOF > locals.tf
           locals {
             project = {
-              name                          = "${{ inputs.project_name }}"
-              github_organization           = "${{ inputs.github_organization_name }}"
-              terraform_cloud_organization  = "${{ inputs.terraform_cloud_organization_name }}"
-              aws_organizational_unit       = "${{ inputs.aws_organizational_unit_name }}"
-              commit_author                 = "${{ inputs.commit_author }}"
-              commit_email                  = "${{ inputs.commit_email }}"
-              organization_email            = "${{ inputs.organization_email }}"
-              aws_root_id                   = "${{ inputs.aws_root_id }}"
-              aws_management_account        = "${{ inputs.aws_management_account }}"
-              aws_management_email          = "${{ inputs.aws_management_email }}"
-              organization_variables = {
+              name                         = "${{ inputs.project_name }}"
+              github_organization          = "${{ inputs.github_organization_name }}"
+              terraform_cloud_organization = "${{ inputs.terraform_cloud_organization_name }}"
+              aws_organizational_unit      = "${{ inputs.aws_organizational_unit_name }}"
+              commit_author                = "${{ inputs.commit_author }}"
+              commit_email                 = "${{ inputs.commit_email }}"
+              organization_email           = "${{ inputs.organization_email }}"
+              aws_root_id                  = "${{ inputs.aws_root_id }}"
+              aws_management_account       = "${{ inputs.aws_management_account }}"
+              aws_management_email         = "${{ inputs.aws_management_email }}"
+              terraform_organization_variables = {
                 "project" = {
                   hcl         = false
                   sensitive   = false
@@ -88,6 +88,12 @@ jobs:
                   sensitive   = false
                   value       = "${{ inputs.terraform_cloud_organization_name }}"
                   description = "The organization name on terraform cloud"
+                }
+                "aws_default_region" = {
+                  hcl         = false
+                  sensitive   = false
+                  value       = "us-east-1"
+                  description = "The aws default region"
                 }
                 "domain_name" = {
                   hcl         = false
@@ -110,8 +116,32 @@ jobs:
                 "notification_webhook" = {
                   hcl         = false
                   sensitive   = true
-                  value       = "\"${{ secrets.DISCORD_NOTIFY_HOOK_URL }}\""
+                  value       = var.notification_webhook
                   description = "A webhook url to notify about deployments"
+                }
+              }
+              github_organization_secrets = {
+                "tfe_team_token" = {
+                  github_key    = "TF_API_TOKEN"
+                  terraform_key = "tfe_team_token"
+                }
+              }
+              github_organization_variables = {
+                "cloudfront_s3_bucket" = {
+                  terraform_key = "cloudfront_s3_bucket"
+                  github_key    = "CLOUDFRONT_S3_BUCKET"
+                }
+                "cloudfront_distribution_id" = {
+                  GITHUB_KEY    = "CLOUDFRONT_DISTRIBUTION_ID"
+                  terraform_key = "cloudfront_distribution_id"
+                }
+                "cognito_app_integration_id" = {
+                  GITHUB_KEY    = "COGNITO_APP_INTEGRATION_ID"
+                  terraform_key = "cognito_app_integration_id"
+                }
+                "aws_default_region" = {
+                  GITHUB_KEY    = "AWS_DEFAULT_REGION"
+                  terraform_key = "aws_default_region"
                 }
               }
             }
