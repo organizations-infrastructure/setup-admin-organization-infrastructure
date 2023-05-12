@@ -107,6 +107,12 @@ jobs:
                   value       = "['EMAIL_1','EMAIL_2']"
                   description = "The emails addresses to forward the emails sent to the SES verified domain"
                 }
+                "notification_webhook" = {
+                  hcl         = false
+                  sensitive   = true
+                  value       = "\"${{ secrets.DISCORD_NOTIFY_HOOK_URL }}\""
+                  description = "A webhook url to notify about deployments"
+                }
               }
             }
           }
